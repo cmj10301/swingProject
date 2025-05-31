@@ -3,6 +3,7 @@ package packages.MainForm;
 import packages.Classes.Book;
 import com.formdev.flatlaf.FlatLightLaf;
 import net.miginfocom.swing.MigLayout;
+import packages.Classes.User;
 import packages.DB.BookDAO;
 import packages.DB.DBConnector;
 
@@ -32,6 +33,7 @@ public class BookManagerApp extends JFrame {
     private List<Book> bestsellerBooks = new ArrayList<>();
     private int startIndex = 0; // 현재 보여지는 시작 인덱스
     private JPanel bookRow;
+    private User loggedInUser;
     public BookManagerApp() {
         setTitle("도서 관리 프로그램 v1.0");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -75,7 +77,11 @@ public class BookManagerApp extends JFrame {
         topBar.add(loginBtn, "align right, gapleft 50");
 
         loginBtn.addActionListener(e -> {
-            new LoginForm(this).setVisible(true);
+            LoginForm loginForm = new LoginForm(this, user -> {
+                this.loggedInUser = user;
+                updateTopBarAfterLogin(user); // ← topBar 변경
+            });
+            loginForm.setVisible(true);
         });
         add(topBar, BorderLayout.NORTH);
         //보더로 바꿔서 탑바 고정시킴..
@@ -291,6 +297,96 @@ public class BookManagerApp extends JFrame {
         panel.add(image);
         panel.add(label);
         return panel;
+    }
+    public void updateTopBarAfterLogin(User user) {
+        topBar.removeAll(); // 일단 다 지우고 다시 구성
+
+        // 왼쪽: 도서관리 로고
+        topBar.add(new JLabel(new ImageIcon(
+                new ImageIcon(getClass().getResource("/icon.png"))
+                        .getImage().getScaledInstance(70, 50, Image.SCALE_SMOOTH)
+        )), "align left");
+
+        // 가운데: 검색창
+        JPanel searchPanel = new JPanel(new MigLayout("", "[][][]", "[]"));
+
+        Map<String, String> categoryMap = new HashMap<>();
+        categoryMap.put("제목", "title");
+        categoryMap.put("저자", "author");
+        categoryMap.put("출판사", "publisher");
+
+        JComboBox<String> categoryBox = new JComboBox<>(new String[]{"제목", "저자", "출판사"});
+        JTextField searchField = new JTextField();
+        JButton searchBtn = new JButton("검색");
+
+        searchPanel.add(categoryBox);
+        searchPanel.add(searchField, "wmin 250");
+        searchPanel.add(searchBtn);
+        topBar.add(Box.createHorizontalGlue(), "pushx");
+        topBar.add(searchPanel, "align center");
+
+        // 오른쪽: 사용자 정보 + 로그아웃
+        JLabel userIcon = new JLabel("👤");
+        userIcon.setFont(new Font("SansSerif", Font.PLAIN, 18));
+
+        JLabel usernameLabel = new JLabel(user.getName() + " 님");
+        usernameLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+
+        JButton logoutBtn = new JButton("로그아웃");
+        logoutBtn.addActionListener(e -> {
+            this.loggedInUser = null;
+            updateTopBarToLoggedOut();
+        });
+
+        topBar.add(userIcon, "gapleft 50");
+        topBar.add(usernameLabel);
+        topBar.add(logoutBtn);
+
+        topBar.revalidate();
+        topBar.repaint();
+    }
+
+    public void updateTopBarToLoggedOut() {
+        topBar.removeAll();
+
+        // 로고 다시 추가
+        topBar.add(new JLabel(new ImageIcon(
+                new ImageIcon(getClass().getResource("/icon.png"))
+                        .getImage().getScaledInstance(70, 50, Image.SCALE_SMOOTH)
+        )), "align left");
+
+        // 검색창 다시 추가
+        JPanel searchPanel = new JPanel(new MigLayout("", "[][][]", "[]"));
+        Map<String, String> categoryMap = new HashMap<>();
+        categoryMap.put("제목", "title");
+        categoryMap.put("저자", "author");
+        categoryMap.put("출판사", "publisher");
+
+        JComboBox<String> categoryBox = new JComboBox<>(new String[]{"제목", "저자", "출판사"});
+        JTextField searchField = new JTextField();
+        JButton searchBtn = new JButton("검색");
+
+        searchPanel.add(categoryBox);
+        searchPanel.add(searchField, "wmin 250");
+        searchPanel.add(searchBtn);
+
+        topBar.add(Box.createHorizontalGlue(), "pushx");
+        topBar.add(searchPanel, "align center");
+
+        // 로그인 버튼
+        JButton loginBtn = new JButton("로그인");
+        loginBtn.addActionListener(e -> {
+            LoginForm loginForm = new LoginForm(this, user -> {
+                this.loggedInUser = user;
+                updateTopBarAfterLogin(user);
+            });
+            loginForm.setVisible(true);
+        });
+
+        topBar.add(loginBtn, "align right, gapleft 50");
+
+        topBar.revalidate();
+        topBar.repaint();
     }
 
     private void updateBookRow() {
