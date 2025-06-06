@@ -11,6 +11,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.prefs.Preferences;
 
 public class LoginForm extends JDialog {
     private final CardLayout cardLayout = new CardLayout();
@@ -32,6 +33,8 @@ public class LoginForm extends JDialog {
     private JToggleButton signupMaleBtn;
     private JToggleButton signupFemaleBtn;
     private User loggedInUser;
+    private final Preferences prefs = Preferences.userRoot().node("BookLogin");// 고유 저장 공간
+    private JCheckBox saveId;
 
     public LoginForm(JFrame parent, Consumer<User> loginSuccessCallback) {
         super(parent, "로그인 / 회원가입", true);
@@ -88,7 +91,11 @@ public class LoginForm extends JDialog {
         loginBtn.addActionListener(e -> {
             String id = loginIdField.getText();
             String pw = new String(loginPwField.getPassword());
-
+            if (saveId.isSelected()) {
+                prefs.put("savedId", id);
+            } else {
+                prefs.remove("savedId");
+            }
             UserDAO userDAO = new UserDAO();
             Optional<User> result = userDAO.login(id, pw);
 
@@ -105,7 +112,14 @@ public class LoginForm extends JDialog {
 
 
         // 🔹 아이디 저장 + 찾기 링크
-        JCheckBox saveId = new JCheckBox("아이디 저장");
+       saveId = new JCheckBox("아이디 저장");
+
+        String savedId = prefs.get("savedId", "");
+        if (!savedId.isEmpty()) {
+            loginIdField.setText(savedId);
+            saveId.setSelected(true);
+        }
+
         JLabel findId = new JLabel("아이디 찾기");
         JLabel findPw = new JLabel("비밀번호 찾기");
 
@@ -330,7 +344,7 @@ public class LoginForm extends JDialog {
 
             if (success) {
                 JOptionPane.showMessageDialog(null, "회원가입이 완료되었습니다!");
-                // TODO: 로그인 화면으로 전환하거나 초기화 처리
+                cardLayout.show(cardPanel, "login");
             } else {
                 JOptionPane.showMessageDialog(null, "회원가입에 실패했습니다. 관리자에게 문의하세요.");
             }
