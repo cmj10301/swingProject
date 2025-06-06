@@ -6,7 +6,10 @@ import java.sql.*;
 import java.util.Optional;
 
 public class UserDAO {
-
+    private static UserDAO instance = new UserDAO();
+    public static UserDAO getInstance() {
+        return instance;
+    }
     // ✅ 아이디 중복확인
     public boolean isUsernameDuplicate(String username) {
         String sql = "SELECT COUNT(*) FROM user WHERE username = ?";
@@ -65,5 +68,22 @@ public class UserDAO {
         }
         return Optional.empty();
     }
+
+    public boolean updateUserInfo(User user) {
+        String sql = "UPDATE user SET name = ?, email = ?, gender = ? WHERE user_id = ?";
+        try (Connection conn = DBConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getEmail());
+            pstmt.setString(3, String.valueOf(user.getGender()));  // "M" 또는 "F"
+            pstmt.setInt(4, user.getUserId());
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 
 }
