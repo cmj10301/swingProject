@@ -5,6 +5,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import net.miginfocom.swing.MigLayout;
 import packages.Classes.User;
 import packages.DB.BookDAO;
+import packages.DB.RentalDAO;
 import packages.MainForm.MyPage;
 
 import javax.swing.*;
@@ -321,6 +322,17 @@ public class BookManagerApp extends JFrame {
 
     // 상세 정보 화면
     private void showBookDetail(Book book,Runnable backCallback) {
+        if (loggedInUser == null) {
+            JOptionPane.showMessageDialog(this, "로그인이 필요합니다.");
+            LoginForm loginForm = new LoginForm(this, user -> {
+                this.loggedInUser = user;
+                updateTopBarAfterLogin(user);
+                showBookDetail(book, backCallback);
+            });
+            loginForm.setVisible(true);
+            return;
+        }
+
         mainContentPanel.removeAll();
 
         JPanel detailPanel = new JPanel(new MigLayout("wrap 2,align center, insets 20",
@@ -348,8 +360,36 @@ public class BookManagerApp extends JFrame {
 
         JButton rentBtn = new JButton("대여하기");
         rentBtn.setPreferredSize(new Dimension(120, 40));
+
         JButton returnBtn = new JButton("반납하기");
         returnBtn.setPreferredSize(new Dimension(120, 40));
+
+        RentalDAO rentalDao = new RentalDAO();
+        boolean isRented = rentalDao.isBookRentedByUser(loggedInUser.getUserId(), book.getBook_id());
+
+        rentBtn.setEnabled(!isRented && book.getStock() > 0);  // 대여 중이 아니고 재고가 있으면 가능
+        returnBtn.setEnabled(isRented);  // 대여 중이면 반납 가능
+
+        rentBtn.addActionListener(e -> {
+            if (rentalDao.rentBook(loggedInUser.getUserId(), book.getBook_id())) {
+                JOptionPane.showMessageDialog(null, "도서를 대여하였습니다.");
+                book.setStock(book.getStock() - 1);  // 재고 감소
+                showBookDetail(book, backCallback);  // 화면 새로고침
+            } else {
+                JOptionPane.showMessageDialog(null, "대여에 실패했습니다.");
+            }
+        });
+
+// ▶ 반납 버튼 액션
+        returnBtn.addActionListener(e -> {
+            if (rentalDao.returnBook(loggedInUser.getUserId(), book.getBook_id())) {
+                JOptionPane.showMessageDialog(null, "도서를 반납하였습니다.");
+                book.setStock(book.getStock() + 1);  // 재고 증가
+                showBookDetail(book, backCallback);  // 화면 새로고침
+            } else {
+                JOptionPane.showMessageDialog(null, "반납에 실패했습니다.");
+            }
+        });
 
         btnPanel.add(rentBtn);
         btnPanel.add(returnBtn);
