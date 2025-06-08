@@ -36,7 +36,7 @@ public class LoginForm extends JDialog {
     private final Preferences prefs = Preferences.userRoot().node("BookLogin");// 고유 저장 공간
     private JCheckBox saveId;
 
-    public LoginForm(JFrame parent, Consumer<User> loginSuccessCallback) {
+    public LoginForm(JFrame parent, Consumer<User> loginSuccessCallback) {//컨수머는 함수형 인터페이스 accept 만가지고있음
         super(parent, "로그인 / 회원가입", true);
         this.loginSuccessCallback = loginSuccessCallback;
         setSize(600, 700);
@@ -88,6 +88,7 @@ public class LoginForm extends JDialog {
         loginBtn.setFocusPainted(false);
         loginBtn.setBackground(Color.LIGHT_GRAY);
         panel.add(loginBtn, "wmin 250, growx");
+
         loginBtn.addActionListener(e -> {
             String id = loginIdField.getText();
             String pw = new String(loginPwField.getPassword());
@@ -102,7 +103,7 @@ public class LoginForm extends JDialog {
             if (result.isPresent()) {
                 loggedInUser = result.get();
                 if (loginSuccessCallback != null) {
-                    loginSuccessCallback.accept(loggedInUser);  // ← 북매니저에게 전달
+                    loginSuccessCallback.accept(loggedInUser);  //  북매니저에게 전달
                 }
                 dispose();
             } else {
@@ -114,9 +115,9 @@ public class LoginForm extends JDialog {
         // 🔹 아이디 저장 + 찾기 링크
        saveId = new JCheckBox("아이디 저장");
 
-        String savedId = prefs.get("savedId", "");
-        if (!savedId.isEmpty()) {
-            loginIdField.setText(savedId);
+        String savedIdGet = prefs.get("savedId", "");
+        if (!savedIdGet.isEmpty()) {
+            loginIdField.setText(savedIdGet);
             saveId.setSelected(true);
         }
 
@@ -278,10 +279,10 @@ public class LoginForm extends JDialog {
         sexPanel.add(signupMaleBtn);
         sexPanel.add(signupFemaleBtn);
 
-        JPanel birthSexPanel = new JPanel(new MigLayout("insets 0", "[grow][]", "[]"));
-        birthSexPanel.add(signupBirthField, "wmin 150, growx");
-        birthSexPanel.add(sexPanel, "gapleft 50");
-        panel.add(birthSexPanel);
+        JPanel birthDayPanel = new JPanel(new MigLayout("insets 0", "[grow][]", "[]"));
+        birthDayPanel.add(signupBirthField, "wmin 150, growx");
+        birthDayPanel.add(sexPanel, "gapleft 50");
+        panel.add(birthDayPanel);
 
         // 🔹 회원가입 + 돌아가기 버튼
         JButton signupBtn = new JButton("회원가입");

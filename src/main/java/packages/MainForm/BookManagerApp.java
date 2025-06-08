@@ -76,8 +76,8 @@ public class BookManagerApp extends JFrame {
         searchBtn = new JButton("검색");
 
         searchBtn.addActionListener(e -> {
-            String displayText = (String) categoryBox.getSelectedItem();
-            String category = categoryMap.get(displayText);
+            String displayText = (String) categoryBox.getSelectedItem(); //한글가져옴
+            String category = categoryMap.get(displayText); // 매핑함
             String keyword = searchField.getText();
             String sortBy = (String) sortCombo.getSelectedItem();
             String orderBy = (String) orderCombo.getSelectedItem();
@@ -85,6 +85,7 @@ public class BookManagerApp extends JFrame {
             BookDAO dao = new BookDAO();
             List<Book> results = dao.searchBooks(category, keyword, sortBy, orderBy);
 
+            //뒤로갈때 저장해놓기
             lastSearchResults = results;
             lastKeyword = keyword;
 
@@ -150,8 +151,8 @@ public class BookManagerApp extends JFrame {
         JButton loginBtn = new JButton("로그인");
         loginBtn.addActionListener(e -> {
             LoginForm loginForm = new LoginForm(this, user -> {
-                this.loggedInUser = user;
-                updateTopBarAfterLogin(user);
+                this.loggedInUser = user; //로그인정보 가져가고
+                updateTopBarAfterLogin(user);//로그인했을때
             });
             loginForm.setVisible(true);
         });
@@ -239,6 +240,7 @@ public class BookManagerApp extends JFrame {
         label.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(image);
         panel.add(label);
+        //콜백함수로 상세정보들어가기
         panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panel.addMouseListener(new MouseAdapter() {
             @Override
@@ -261,8 +263,9 @@ public class BookManagerApp extends JFrame {
         JPanel filterPanel = new JPanel();
         filterPanel.add(sortCombo);
         filterPanel.add(orderCombo);
-        JComboBox<String> countCombo = new JComboBox<>(new String[]{"10건", "20건", "30건", "50건"});
-        filterPanel.add(countCombo);
+        //10건 같은 건수
+//        JComboBox<String> countCombo = new JComboBox<>(new String[]{"10건", "20건", "30건", "50건"});
+//        filterPanel.add(countCombo);
         topResultPanel.add(filterPanel, "align right");
 
         resultContentPanel = new JPanel(new MigLayout("wrap 1", "[grow]", "[]10[]"));
@@ -288,7 +291,7 @@ public class BookManagerApp extends JFrame {
             row.add(imgLabel);
             row.add(infoLabel, "growx");
 
-            row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); //마우스 올렸을때 커서 표시
             row.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
