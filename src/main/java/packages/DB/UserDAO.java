@@ -118,4 +118,38 @@
         return Optional.empty();
     }
 
+
+
+        public boolean existsByIdAndEmail(String id, String email) {
+            String sql = "SELECT COUNT(*) FROM user WHERE username = ? AND email = ?";
+            try (Connection conn = DBConnector.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setString(1, id);
+                pstmt.setString(2, email);
+                ResultSet rs = pstmt.executeQuery();
+
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
+        public boolean updatePassword(String username, String newPassword) {
+            String sql = "UPDATE user SET password = ? WHERE username = ?";
+            try (Connection conn = DBConnector.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setString(1, newPassword);
+                pstmt.setString(2, username);
+                return pstmt.executeUpdate() == 1;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
     }

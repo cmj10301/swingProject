@@ -7,6 +7,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class RentalDAO {
 
@@ -78,7 +79,7 @@ public class RentalDAO {
     public List<Rental> getRentalHistoryByUserId(int userId) {
         List<Rental> list = new ArrayList<>();
         String sql = """
-            SELECT r.id AS rental_id, r.user_id, r.book_id, r.rent_date, r.return_date,
+            SELECT r.id AS rentals_id, r.user_id, r.book_id, r.rent_date, r.return_date,
                    b.title, b.author, b.publisher, b.image_path, b.stock, b.total_rent_count
             FROM rentals r
             JOIN book b ON r.book_id = b.book_id
@@ -103,7 +104,7 @@ public class RentalDAO {
                         .build();
 
                 Rental rental = Rental.builder()
-                        .id(rs.getInt("rental_id"))
+                        .id(rs.getInt("rentals_id"))
                         .userId(rs.getInt("user_id"))
                         .bookId(rs.getInt("book_id"))
                         .rentDate(rs.getDate("rent_date").toLocalDate())
@@ -176,6 +177,22 @@ public class RentalDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public Optional<LocalDate> getRentDate(int userId, int bookId) {
+        String sql = "SELECT rent_date FROM rentals WHERE user_id = ? AND book_id = ? AND return_date IS NULL";
+        try (Connection conn = DBConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, bookId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return Optional.of(rs.getDate("rent_date").toLocalDate());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
 
