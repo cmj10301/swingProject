@@ -124,6 +124,86 @@ public class LoginForm extends JDialog {
         JLabel findId = new JLabel("아이디 찾기");
         JLabel findPw = new JLabel("비밀번호 찾기");
 
+//아이디 찾기마우스리스너
+        findId.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPanel panel = new JPanel(new MigLayout("wrap 2", "[80!][grow]", ""));
+                JTextField emailField = new JTextField();
+
+                panel.add(new JLabel("이메일:"));
+                panel.add(emailField, "growx");
+
+                int result = JOptionPane.showConfirmDialog(
+                        LoginForm.this,
+                        panel,
+                        "아이디 찾기",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE
+                );
+
+                if (result == JOptionPane.OK_OPTION) {
+                    String email = emailField.getText().trim();
+
+                    if (email.isEmpty()) {
+                        JOptionPane.showMessageDialog(LoginForm.this, "이메일을 입력하세요.", "입력 오류", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    UserDAO dao = new UserDAO();
+                    Optional<String> idResult = dao.findUsernameByEmail(email);
+
+                    if (idResult.isPresent()) {
+                        JOptionPane.showMessageDialog(LoginForm.this, "가입된 아이디는 " + idResult.get()+" 입니다.", "아이디 찾기 결과", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(LoginForm.this, "해당 이메일로 가입된 아이디가 없습니다.", "아이디 찾기 결과", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
+        //비밀번호 찾기 클릭 리스너
+        findPw.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPanel panel = new JPanel(new MigLayout("wrap 2", "[80!][grow]", ""));
+                JTextField idField = new JTextField();
+                JTextField emailField = new JTextField();
+
+                panel.add(new JLabel("아이디:"));
+                panel.add(idField, "growx");
+                panel.add(new JLabel("이메일:"));
+                panel.add(emailField, "growx");
+
+                int result = JOptionPane.showConfirmDialog(
+                        LoginForm.this,
+                        panel,
+                        "비밀번호 찾기",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE
+                );
+
+                if (result == JOptionPane.OK_OPTION) {
+                    String id = idField.getText().trim();
+                    String email = emailField.getText().trim();
+
+                    if (id.isEmpty() || email.isEmpty()) {
+                        JOptionPane.showMessageDialog(LoginForm.this, "아이디와 이메일을 모두 입력하세요.", "입력 오류", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    UserDAO dao = new UserDAO();
+                    Optional<String> pwResult = dao.findPasswordByIdAndEmail(id, email);
+
+                    if (pwResult.isPresent()) {
+                        JOptionPane.showMessageDialog(LoginForm.this, "비밀번호는 " + pwResult.get() +" 입니다.", "비밀번호 찾기 결과", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(LoginForm.this, "일치하는 계정 정보가 없습니다.", "비밀번호 찾기 결과", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        
         findId.setForeground(Color.GRAY);
         findPw.setForeground(Color.GRAY);
         findId.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
